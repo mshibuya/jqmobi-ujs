@@ -33,6 +33,5 @@ $(document).bind('submit', function(e) {
     form.attr('target', name).append(target_input);
     $('#qunit-fixture').append(iframe);
     form.trigger('iframe:loading', form);
-    e.target.submit();
   }
 });
