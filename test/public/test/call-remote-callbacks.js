@@ -2,15 +2,7 @@
 
 module('call-remote-callbacks', {
   setup: function() {
-    $('#qunit-fixture').append($('<form />', {
-      action: '/echo', method: 'get', 'data-remote': 'true'
-    }));
-  },
-  teardown: function() {
-    $('form[data-remote]').die('ajax:beforeSend');
-    $('form[data-remote]').die('ajax:before');
-    $('form[data-remote]').die('ajax:complete');
-    $('form[data-remote]').die('ajax:success');
+    $('#qunit-fixture').append('<form action="/echo" method="get" data-remote="true"></form>');
   }
 });
 
@@ -29,10 +21,10 @@ asyncTest('modifying form fields with "ajax:before" sends modified data in reque
   $('form[data-remote]')
     .append($('<input type="text" name="user_name" value="john">'))
     .append($('<input type="text" name="removed_user_name" value="john">'))
-    .live('ajax:before', function() {
+    .bind('ajax:before', function() {
       var form = $(this);
       form
-        .append($('<input />',{name: 'other_user_name',value: 'jonathan'}))
+        .append($('<input name="other_user_name" value="jonathan" />'))
         .find('input[name="removed_user_name"]').remove();
       form
         .find('input[name="user_name"]').val('steve');
@@ -49,21 +41,21 @@ asyncTest('modifying form fields with "ajax:before" sends modified data in reque
 
 asyncTest('modifying data("type") with "ajax:before" requests new dataType in request', 2, function(){
   $('form[data-remote]').data('type','html')
-    .live('ajax:before', function() {
+    .bind('ajax:before', function() {
       var form = $(this);
       form.data('type','xml')
     });
 
   submit(function(form) {
     form.bind('ajax:beforeSend', function(e, xhr, settings) {
-      equal(settings.dataType, 'xml', 'modified dataType should have been requested');
+      equal(settings.dataType, 'application/xml, text/xml', 'modified dataType should have been requested');
     });
   });
 });
 
 asyncTest('setting data("cross-domain",true) with "ajax:before" uses new setting in request', 2, function(){
   $('form[data-remote]').data('cross-domain',false)
-    .live('ajax:before', function() {
+    .bind('ajax:before', function() {
       var form = $(this);
       form.data('cross-domain',true)
     });
@@ -87,9 +79,9 @@ asyncTest('stopping the "ajax:beforeSend" event aborts the request', 1, function
     form.bind('ajax:error', function(e, xhr, status, error) {
       ok(false, 'ajax:error should not run');
     });
-    form.bind('ajaxStop', function() {
+    setTimeout(function() {
       start();
-    });
+    }, 13);
   });
 });
 
@@ -105,8 +97,8 @@ asyncTest('blank required form input field should abort request and trigger "aja
     })
     .bind('ajax:aborted:required', function(e,data){
       ok(data.length == 2, 'ajax:aborted:required event is passed all blank required inputs (jQuery objects)');
-      ok(data.first().is('input[name="user_name"]') , 'ajax:aborted:required adds blank required input to data');
-      ok(data.last().is('textarea[name="user_bio"]'), 'ajax:aborted:required adds blank required textarea to data');
+      ok(data.filter('input[name="user_name"]').length > 0 , 'ajax:aborted:required adds blank required input to data');
+      ok(data.filter('textarea[name="user_bio"]').length > 0, 'ajax:aborted:required adds blank required textarea to data');
       ok(true, 'ajax:aborted:required should run');
     })
     .trigger('submit');
@@ -241,7 +233,7 @@ function skipIt() {
 }
 
 asyncTest('"ajax:beforeSend" can be observed and stopped with event delegation', 1, function() {
-  $('form[data-remote]').live('ajax:beforeSend', function() {
+  $('form[data-remote]').bind('ajax:beforeSend', function() {
     ok(true, 'ajax:beforeSend observed with event delegation');
     return false;
   });
@@ -250,9 +242,9 @@ asyncTest('"ajax:beforeSend" can be observed and stopped with event delegation',
     form.unbind('ajax:complete').bind('ajax:complete', function() {
       ok(false, 'ajax:complete should not run');
     });
-    form.bind('ajaxStop', function() {
+    setTimeout(function() {
       start();
-    });
+    }, 13);
   });
 });
 
@@ -282,7 +274,7 @@ asyncTest('"ajax:beforeSend", "ajax:error" and "ajax:complete" are triggered on 
       ok(xhr.getResponseHeader, 'first argument to "ajax:error" should be an XHR object');
       equal(status, 'error', 'second argument to ajax:error should be a status string');
       // Firefox 8 returns "Forbidden " with trailing space
-      equal($.trim(error), 'Forbidden', 'third argument to ajax:error should be an HTTP status response');
+      equal(error, 'Forbidden', 'third argument to ajax:error should be an HTTP status response');
       // Opera returns "0" for HTTP code
       equal(xhr.status, window.opera ? 0 : 403, 'status code should be 403');
     });
@@ -292,13 +284,13 @@ asyncTest('"ajax:beforeSend", "ajax:error" and "ajax:complete" are triggered on 
 // IF THIS TEST IS FAILING, TRY INCREASING THE TIMEOUT AT THE BOTTOM TO > 100
 asyncTest('binding to ajax callbacks via .live() triggers handlers properly', 3, function() {
   $('form[data-remote]')
-    .live('ajax:beforeSend', function() {
+    .bind('ajax:beforeSend', function() {
       ok(true, 'ajax:beforeSend handler is triggered');
     })
-    .live('ajax:complete', function() {
+    .bind('ajax:complete', function() {
       ok(true, 'ajax:complete handler is triggered');
     })
-    .live('ajax:success', function() {
+    .bind('ajax:success', function() {
       ok(true, 'ajax:success handler is triggered');
     })
     .trigger('submit');

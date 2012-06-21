@@ -3,9 +3,7 @@
 module('override', {
   setup: function() {
     window.realHref = $.rails.href;
-    $('#qunit-fixture').append($('<a />', {
-      href: '/real/href', 'data-method': 'delete', 'data-href': '/data/href'
-    }));
+    $('#qunit-fixture').append('<a href="/real/href" data-method="delete" data-href="/data/href"></a>');
   },
   teardown: function() {
     $.rails.href = window.realHref;

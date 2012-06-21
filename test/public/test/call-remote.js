@@ -3,7 +3,11 @@
 function build_form(attrs) {
   attrs = $.extend({ action: '/echo', 'data-remote': 'true' }, attrs);
 
-  $('#qunit-fixture').append($('<form />', attrs))
+  var form = $('<form />');
+  for(var key in attrs){
+    form.attr(key, attrs[key]);
+  }
+  $('#qunit-fixture').append(form)
     .find('form').append($('<input type="text" name="user_name" value="john">'));
 };
 

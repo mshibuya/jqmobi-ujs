@@ -1,21 +1,16 @@
-<% @title = "jquery-ujs test" %>
+<% @title = "jqmobi-ujs test" %>
 
 <%= test 'data-confirm', 'data-remote', 'data-disable', 'call-remote', 'call-remote-callbacks', 'data-method', 'override' %>
 
 <h1 id="qunit-header"><%= @title %></h1>
-<div id="jquery-cdn">
-  CDN:
-  <%= cdn_link 'jquery' %> •
-  <%= cdn_link 'googleapis' %>
-</div>
-<div id="jquery-version">
-  jQuery version:
+<div id="jqmobi-version">
+  jqMobi version:
 
-  <% jquery_versions.each do |v| %>
-    <%= ' • ' if v != jquery_versions.first %>
-    <%= jquery_link v %>
+  <% jqmobi_versions.each do |v| %>
+    <%= ' • ' if v != jqmobi_versions.first %>
+    <%= jqmobi_link v %>
   <% end %>
- <%= (' • ' + jquery_link('edge')) if File.exist?(settings.root + '/public/vendor/jquery.js') %>
+ <%= (' • ' + jqmobi_link('edge')) if File.exist?(settings.root + '/public/vendor/jq.mobi.js') %>
 </div>
 <h2 id="qunit-banner"></h2>
 <div id="qunit-testrunner-toolbar"></div>

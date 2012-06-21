@@ -1,35 +1,24 @@
 module('data-disable', {
   setup: function() {
-    $('#qunit-fixture').append($('<form />', {
-      action: '/echo',
-      'data-remote': 'true',
-      method: 'post'
-    }))
+    $('#qunit-fixture').append('<form action="/echo" data-remote="true" method="post"></form>')
       .find('form')
-      .append($('<input type="text" data-disable-with="processing ..." name="user_name" value="john" />'));
+      .append('<input type="text" data-disable-with="processing ..." name="user_name" value="john" />');
 
-    $('#qunit-fixture').append($('<form />', {
-      action: '/echo',
-      method: 'post'
-    }))
-      .find('form:last')
+    $('#qunit-fixture').append('<form action="/echo" method="post"></form>')
+      .find('form:last-child')
       // WEEIRDD: the form won't submit to an iframe if the button is name="submit" (??!)
-      .append($('<input type="submit" data-disable-with="submitting ..." name="submit2" value="Submit" />'));
+      .append('<input type="submit" data-disable-with="submitting ..." name="submit2" value="Submit" />');
 
-    $('#qunit-fixture').append($('<a />', {
-      text: 'Click me',
-      href: '/echo',
-      'data-disable-with': 'clicking...'
-    }));
+    $('#qunit-fixture').append('<a href="/echo" data-disable-with="clicking...">Click me</a>');
   }
 });
 
 function getVal(el) {
-  return el.is('input,textarea,select') ? el.val() : el.text();
+  return (el.filter('input,textarea,select').length > 0) ? el.val() : el.text();
 }
 
 function disabled(el) {
-  return el.is('input,textarea,select,button') ? el.is(':disabled') : el.data('ujs:enable-with');
+  return (el.filter('input,textarea,select,button').length > 0) ? el.attr('disabled') !== null : el.data('ujs:enable-with');
 }
 
 function checkEnabledState(el, text) {
@@ -89,7 +78,8 @@ asyncTest('form input[type=submit][data-disable-with] disables', 6, function(){
       checkDisabledState(input, 'submitting ...');
       start();
     }, 30);
-  }).trigger('submit');
+  });
+  input.trigger('click');
 
   setTimeout(function() {
     checkDisabledState(input, 'submitting ...');
@@ -115,7 +105,9 @@ asyncTest('form[data-remote] input[data-disable-with] is replaced with disabled 
       newDisabledInput = input.clone().attr('disabled', 'disabled');
 
   form.bind('ajax:success', function(){
-    input.replaceWith(newDisabledInput);
+    var parent = input[0].parentNode;
+    $(input).remove()
+    $(parent).append(newDisabledInput);
 
     setTimeout(function(){
       checkEnabledState(newDisabledInput, 'Submit');
@@ -126,7 +118,8 @@ asyncTest('form[data-remote] input[data-disable-with] is replaced with disabled 
 
 asyncTest('form[data-remote] textarea[data-disable-with] attribute', 3, function() {
   var form = $('form[data-remote]'),
-      textarea = $('<textarea data-disable-with="processing ..." name="user_bio">born, lived, died.</textarea>').appendTo(form);
+      textarea = $('<textarea data-disable-with="processing ..." name="user_bio">born, lived, died.</textarea>');
+  form.append(textarea);
 
   form.bind('ajax:success', function(e, data) {
     setTimeout(function() {
@@ -144,7 +137,9 @@ asyncTest('a[data-disable-with] disables', 4, function() {
 
   checkEnabledState(link, 'Click me');
 
-  link.trigger('click');
+  link.bind('click', function(e){
+    e.preventDefault();
+  }).trigger('click');
   checkDisabledState(link, 'clicking...');
   start();
 });
@@ -158,11 +153,12 @@ asyncTest('a[data-remote][data-disable-with] disables and re-enables', 6, functi
     .bind('ajax:beforeSend', function() {
       checkDisabledState(link, 'clicking...');
     })
-    .live('ajax:complete', function() {
+    .trigger('click');
+
+    setTimeout(function() {
       checkEnabledState(link, 'Click me');
       start();
-    })
-    .trigger('click');
+    }, 13)
 });
 
 asyncTest('a[data-remote][data-disable-with] re-enables when `ajax:before` event is cancelled', 6, function() {
@@ -203,22 +199,23 @@ asyncTest('a[data-remote][data-disable-with] re-enables when `ajax:beforeSend` e
 
 asyncTest('form[data-remote] input|button|textarea[data-disable-with] does not disable when `ajax:beforeSend` event is cancelled', 8, function() {
   var form = $('form[data-remote]'),
-      input = form.find('input:text'),
-      button = $('<button data-disable-with="submitting ..." name="submit2">Submit</button>').appendTo(form),
-      textarea = $('<textarea data-disable-with="processing ..." name="user_bio">born, lived, died.</textarea>').appendTo(form),
-      submit = $('<input type="submit" data-disable-with="submitting ..." name="submit2" value="Submit" />').appendTo(form);
+      input = form.find('input[type=text]'),
+      button = $('<button data-disable-with="submitting ..." name="submit2">Submit</button>'),
+      textarea = $('<textarea data-disable-with="processing ..." name="user_bio">born, lived, died.</textarea>'),
+      submit = $('<input type="submit" data-disable-with="submitting ..." name="submit2" value="Submit" />');
 
-  form
+  form.append(button).append(textarea).append(submit)
     .bind('ajax:beforeSend', function() {
       return false;
     })
     .trigger('submit');
 
-  checkEnabledState(input, 'john');
-  checkEnabledState(button, 'Submit');
-  checkEnabledState(textarea, 'born, lived, died.');
-  checkEnabledState(submit, 'Submit');
-
-  start();
+    setTimeout(function() {
+      checkEnabledState(input, 'john');
+      checkEnabledState(button, 'Submit');
+      checkEnabledState(textarea, 'born, lived, died.');
+      checkEnabledState(submit, 'Submit');
+      start();
+    }, 30);
 
 });

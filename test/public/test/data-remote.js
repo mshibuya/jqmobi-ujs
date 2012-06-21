@@ -1,17 +1,8 @@
 module('data-remote', {
   setup: function() {
     $('#qunit-fixture')
-      .append($('<a />', {
-        href: '/echo',
-        'data-remote': 'true',
-        'data-params': 'data1=value1&data2=value2',
-        text: 'my address'
-      }))
-      .append($('<form />', {
-        action: '/echo',
-        'data-remote': 'true',
-        method: 'post'
-      }))
+      .append('<a href="/echo" data-remote="true" data-params="data1=value1&data2=value2">my address</a>')
+      .append('<form action="/echo" data-remote="true" method="post"></form>')
       .find('form').append($('<input type="text" name="user_name" value="john">'));
 
   }
@@ -32,10 +23,12 @@ asyncTest('ctrl-clicking on a link does not fire ajaxyness', 0, function() {
 
   e = $.Event('click');
   e.metaKey = true;
+  e.preventDefault();
   link.trigger(e);
 
   e = $.Event('click');
   e.ctrlKey = true;
+  e.preventDefault();
   link.trigger(e);
 
   setTimeout(function(){ start(); }, 13);
@@ -81,14 +74,9 @@ asyncTest('clicking on a link with data-remote attribute', 5, function() {
 asyncTest('changing a select option with data-remote attribute', 5, function() {
   $('form')
     .append(
-      $('<select />', {
-        'name': 'user_data',
-        'data-remote': 'true',
-        'data-params': 'data1=value1',
-        'data-url': '/echo'
-      })
-      .append($('<option />', {value: 'optionValue1', text: 'option1'}))
-      .append($('<option />', {value: 'optionValue2', text: 'option2'}))
+      $('<select name="user_data" data-remote="true" data-params="data1=value1" data-url="/echo"></select>')
+      .append('<option value="optionValue1">option1</option>')
+      .append('<option value="optionValue2">option2</option>')
     );
 
   $('select[data-remote]')
@@ -136,13 +124,7 @@ asyncTest('form\'s submit bindings in browsers that don\'t support submit bubbli
       start();
     });
 
-    if(!$.support.submitBubbles) {
-      // Must indrectly submit form via click to trigger jQuery's manual submit bubbling in IE
-      form.find('input[type=submit]')
-      .trigger('click');
-    } else {
-      form.trigger('submit');
-    }
+    form.trigger('submit');
 });
 
 asyncTest('returning false in form\'s submit bindings in non-submit-bubbling browsers', 1, function(){
@@ -158,12 +140,7 @@ asyncTest('returning false in form\'s submit bindings in non-submit-bubbling bro
       ok(false, 'form should not be submitted');
     });
 
-    if (!$.support.submitBubbles) {
-      // Must indrectly submit form via click to trigger jQuery's manual submit bubbling in IE
-      form.find('input[type=submit]').trigger('click');
-    } else {
-      form.trigger('submit');
-    }
+    form.trigger('submit');
 
     setTimeout(function(){ start(); }, 13);
 });

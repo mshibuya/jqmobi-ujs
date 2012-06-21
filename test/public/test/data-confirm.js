@@ -1,11 +1,6 @@
 module('data-confirm', {
   setup: function() {
-    $('#qunit-fixture').append($('<a />', {
-      href: '/echo',
-      'data-remote': 'true',
-      'data-confirm': 'Are you absolutely sure?',
-      text: 'my social security number'
-    }));
+    $('#qunit-fixture').append('<a href="/echo" data-remote="true" data-confirm="Are you absolutely sure?">my social security number</a>');
 
     this.windowConfirm = window.confirm;
   },
@@ -64,9 +59,9 @@ asyncTest('binding to confirm event and returning false', 1, function() {
   };
 
   $('a[data-confirm]')
-    .bind('confirm', function() {
+    .bind('confirm', function(e) {
       App.assert_callback_invoked('confirm');
-      return false;
+      e.result = false;
     })
     .bind('confirm:complete', function() {
       App.assert_callback_not_invoked('confirm:complete')
@@ -86,9 +81,9 @@ asyncTest('binding to confirm:complete event and returning false', 2, function()
   };
 
   $('a[data-confirm]')
-    .bind('confirm:complete', function() {
+    .bind('confirm:complete', function(e) {
       App.assert_callback_invoked('confirm:complete');
-      return false;
+      e.result = false;
     })
     .bind('ajax:beforeSend', function() {
       App.assert_callback_not_invoked('ajax:beforeSend');

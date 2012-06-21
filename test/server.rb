@@ -1,34 +1,24 @@
 require 'sinatra'
 require 'json'
 
-JQUERY_VERSIONS = %w[ 1.6 1.6.1 1.6.2 1.6.3 1.6.4 1.7 1.7.1 1.7.2 ].freeze
+JQMOBI_VERSIONS = %w[ cdn ].freeze
 
 use Rack::Static, :urls => ["/src"], :root => File.expand_path('..', settings.root)
 
 helpers do
-  def jquery_link version
+  def jqmobi_link version
     if params[:version] == version
       "[#{version}]"
     else
-      "<a href='/?version=#{version}&cdn=#{params[:cdn]}'>#{version}</a>"
+      "<a href='/?version=#{version}'>#{version}</a>"
     end
   end
 
-  def cdn_link cdn
-    if params[:cdn] == cdn
-      "[#{cdn}]"
-    else
-      "<a href='/?version=#{params[:version]}&cdn=#{cdn}'>#{cdn}</a>"
-    end
-  end
-
-  def jquery_src
+  def jqmobi_src
     if params[:version] == 'edge'
-      "/vendor/jquery.js"
-    elsif params[:cdn] && params[:cdn] == 'googleapis'
-      "https://ajax.googleapis.com/ajax/libs/jquery/#{params[:version]}/jquery.min.js"
+      "/vendor/jq.mobi.js"
     else
-      "http://code.jquery.com/jquery-#{params[:version]}.js"
+      "http://cdn.jqmobi.com/jq.mobi.min.js"
     end
   end
 
@@ -42,14 +32,13 @@ helpers do
     %(<script src="#{src}" type="text/javascript"></script>)
   end
 
-  def jquery_versions
-    JQUERY_VERSIONS
+  def jqmobi_versions
+    JQMOBI_VERSIONS
   end
 end
 
 get '/' do
-  params[:version] ||= '1.7.2'
-  params[:cdn] ||= 'jquery'
+  params[:version] ||= 'cdn'
   erb :index
 end
 
@@ -65,7 +54,7 @@ end
       <<-HTML
         <script>
           if (window.top && window.top !== window)
-            window.top.jQuery.event.trigger('iframe:loaded', #{payload})
+            window.top.jq('form,a').trigger('iframe:loaded', #{payload})
         </script>
         <p>You shouldn't be seeing this. <a href="#{request.env['HTTP_REFERER']}">Go back</a></p>
       HTML

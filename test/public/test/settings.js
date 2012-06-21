@@ -23,15 +23,16 @@ App.assert_request_path = function(request_env, path) {
 // hijacks normal form submit; lets it submit to an iframe to prevent
 // navigating away from the test suite
 $(document).bind('submit', function(e) {
-  if (!e.isDefaultPrevented()) {
+  if (!e.defaultPrevented) {
     var form = $(e.target), action = form.attr('action'),
-        name = 'form-frame' + jQuery.guid++,
+        name = 'form-frame' + jq.uuid(),
         iframe = $('<iframe name="' + name + '" />'),
         target_input = '<input name="_target" value="' + form.attr('target') + '" type="hidden" />';
 
     if (action.indexOf('iframe') < 0) form.attr('action', action + '?iframe=true')
     form.attr('target', name).append(target_input);
     $('#qunit-fixture').append(iframe);
-    $.event.trigger('iframe:loading', form);
+    form.trigger('iframe:loading', form);
+    e.target.submit();
   }
 });
